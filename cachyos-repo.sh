@@ -135,11 +135,6 @@ run_install() {
         sudo mv $pacman_conf_cachyos $pacman_conf
     else
         info "x86-64-v3 is not supported"
-        info "Backup old config"
-        sudo mv $pacman_conf $pacman_conf_path_backup
-
-        info "CachyOS Repo changed"
-        sudo mv $pacman_conf_cachyos $pacman_conf
     fi
 
     if [ $is_v4_supported -eq 0 ]; then
@@ -155,11 +150,6 @@ run_install() {
         sudo mv $pacman_conf_cachyos $pacman_conf
     else
         info "x86-64-v4 is not supported"
-        info "Backup old config"
-        sudo mv $pacman_conf $pacman_conf_path_backup
-
-        info "CachyOS Repo changed"
-        sudo mv $pacman_conf_cachyos $pacman_conf
     fi
 
     msg "Done installing CachyOS repo."
