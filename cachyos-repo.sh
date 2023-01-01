@@ -33,6 +33,11 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
+if [ ! -f /etc/pacman.conf ]; then
+  echo "File [/etc/pacman.conf] not found!"
+  exit 1
+fi
+
 _install=true
 _remove=false
 for i in "$@"; do
@@ -98,58 +103,69 @@ info() {
     printf "${YELLOW} -->${ALL_OFF}${BOLD} ${mesg}${ALL_OFF}\n" "$@" >&2
 }
 
-check_v3_support() {
-    /lib/ld-linux-x86-64.so.2 --help | grep "x86-64-v3 (supported, searched)" > /dev/null
+check_supported_isa_level() {
+    /lib/ld-linux-x86-64.so.2 --help | grep "$1 (supported, searched)" > /dev/null
     echo $?
 }
 
-check_v4_support() {
-    /lib/ld-linux-x86-64.so.2 --help | grep "x86-64-v4 (supported, searched)" > /dev/null
+check_if_repo_was_added() {
+    cat /etc/pacman.conf | grep "(cachyos\|cachyos-v3\|cachyos-testing-v3\|cachyos-v4)" > /dev/null
     echo $?
+}
+
+check_if_repo_was_commented() {
+    cat /etc/pacman.conf | grep "cachyos\|cachyos-v3\|cachyos-testing-v3\|cachyos-v4" | grep -v "#\[" | grep "\[" > /dev/null
+    echo $?
+}
+
+add_specific_repo() {
+    local isa_level="$1"
+    local gawk_script="$2"
+    local repo_name="$3"
+    local cmd_check="check_supported_isa_level ${isa_level}"
+
+    local pacman_conf="/etc/pacman.conf"
+    local pacman_conf_cachyos="./pacman.conf"
+    local pacman_conf_path_backup="/etc/pacman.conf.bak"
+
+    local is_isa_supported="$(eval ${cmd_check})"
+    if [ $is_isa_supported -eq 0 ]; then
+        info "${isa_level} is supported"
+
+        cp $pacman_conf $pacman_conf_cachyos
+        gawk -i inplace -f $gawk_script $pacman_conf_cachyos || true
+
+        info "Backup old config"
+        mv $pacman_conf $pacman_conf_path_backup
+
+        info "CachyOS ${repo_name} Repo changed"
+        mv $pacman_conf_cachyos $pacman_conf
+    else
+        info "${isa_level} is not supported"
+    fi
 }
 
 run_install() {
     msg "Installing CachyOS repo.."
 
-    local pacman_conf="/etc/pacman.conf"
-    local pacman_conf_cachyos="./pacman.conf"
-    local pacman_conf_path_backup="/etc/pacman.conf.bak"
-    local is_v4_supported="$(check_v4_support)"
-    local is_v3_supported="$(check_v3_support)"
+    pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com
+    pacman-key --lsign-key F3B607488DB35A47
 
-    sudo pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com
-    sudo pacman-key --lsign-key F3B607488DB35A47
+    local mirror_url="https://mirror.cachyos.org/repo/x86_64/cachyos"
 
-    sudo pacman -U 'https://mirror.cachyos.org/repo/x86_64/cachyos/cachyos-keyring-2-1-any.pkg.tar.zst' 'https://mirror.cachyos.org/repo/x86_64/cachyos/cachyos-mirrorlist-14-1-any.pkg.tar.zst' 'https://mirror.cachyos.org/repo/x86_64/cachyos/cachyos-v3-mirrorlist-14-1-any.pkg.tar.zst' 'https://mirror.cachyos.org/repo/x86_64/cachyos/cachyos-v4-mirrorlist-2-1-any.pkg.tar.zst'
+    pacman -U "${mirror_url}/cachyos-keyring-2-1-any.pkg.tar.zst"        \
+              "${mirror_url}/cachyos-mirrorlist-14-1-any.pkg.tar.zst"    \
+              "${mirror_url}/cachyos-v3-mirrorlist-14-1-any.pkg.tar.zst" \
+              "${mirror_url}/cachyos-v4-mirrorlist-2-1-any.pkg.tar.zst"  \
+              "${mirror_url}/pacman-6.0.2-10-x86_64.pkg.tar.zst"
 
-    if [ $is_v3_supported -eq 0 ]; then
-        info "x86-64-v3 is supported"
-
-        cp $pacman_conf $pacman_conf_cachyos
-        gawk -i inplace -f ./install-repo.awk $pacman_conf_cachyos || true
-
-        info "Backup old config"
-        sudo mv $pacman_conf $pacman_conf_path_backup
-
-        info "CachyOS -v3 Repo changed"
-        sudo mv $pacman_conf_cachyos $pacman_conf
+    local is_repo_added="$(check_if_repo_was_added)"
+    local is_repo_commented="$(check_if_repo_was_commented)"
+    if [ $is_repo_added -ne 0 ] || [ $is_repo_commented -ne 0 ]; then
+        add_specific_repo x86-64-v3 ./install-repo.awk cachyos-v3
+        add_specific_repo x86-64-v4 ./install-v4-repo.awk cachyos-v4
     else
-        info "x86-64-v3 is not supported"
-    fi
-
-    if [ $is_v4_supported -eq 0 ]; then
-        info "x86-64-v4 is supported"
-
-        cp $pacman_conf $pacman_conf_cachyos
-        gawk -i inplace -f ./install-v4-repo.awk $pacman_conf_cachyos || true
-
-        info "Backup old config"
-        sudo mv $pacman_conf $pacman_conf_path_backup
-
-        info "CachyOS -v4 Repo changed"
-        sudo mv $pacman_conf_cachyos $pacman_conf
-    else
-        info "x86-64-v4 is not supported"
+        info "Repo is already added!"
     fi
 
     msg "Done installing CachyOS repo."
@@ -162,14 +178,20 @@ run_remove() {
     local pacman_conf_cachyos="./pacman.conf"
     local pacman_conf_path_backup="/etc/pacman.conf.bak"
 
-    cp $pacman_conf $pacman_conf_cachyos
-    gawk -i inplace -f ./remove-repo.awk $pacman_conf_cachyos || true
+    local is_repo_added="$(check_if_repo_was_added)"
+    local is_repo_commented="$(check_if_repo_was_commented)"
+    if [ $is_repo_added -eq 0 ] || [ $is_repo_commented -eq 0 ]; then
+        cp $pacman_conf $pacman_conf_cachyos
+        gawk -i inplace -f ./remove-repo.awk $pacman_conf_cachyos || true
 
-    info "Backup old config"
-    sudo mv $pacman_conf $pacman_conf_path_backup
+        info "Backup old config"
+        mv $pacman_conf $pacman_conf_path_backup
 
-    info "CachyOS repo removed"
-    sudo mv $pacman_conf_cachyos $pacman_conf
+        info "CachyOS repo removed"
+        mv $pacman_conf_cachyos $pacman_conf
+    else
+        info "Repo is not added!"
+    fi
 
     msg "Done removing CachyOS repo."
 }

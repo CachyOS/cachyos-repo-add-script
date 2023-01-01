@@ -24,8 +24,8 @@ BEGIN { err = 1 }
         rm = 2;
       }
       set = 1;
-    } else if ($0 == "Architecture = auto" || $0 == "Architecture = x86_64") {
-      print "Architecture = x86_64 x86_64_v3";
+    } else if ($0 == "Architecture = x86_64" || $0 == "Architecture = x86_64 x86_64_v3" || $0 == "Architecture = x86_64 x86_64_v3 x86_64_v4") {
+      print "Architecture = auto";
       next;
     }
 
