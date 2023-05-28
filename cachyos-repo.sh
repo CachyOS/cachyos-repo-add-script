@@ -109,12 +109,12 @@ check_supported_isa_level() {
 }
 
 check_if_repo_was_added() {
-    cat /etc/pacman.conf | grep "(cachyos\|cachyos-v3\|cachyos-testing-v3\|cachyos-v4)" > /dev/null
+    cat /etc/pacman.conf | grep "(cachyos\|cachyos-v3\|cachyos-core-v3\|cachyos-extra-v3\|cachyos-testing-v3\|cachyos-v4)" > /dev/null
     echo $?
 }
 
 check_if_repo_was_commented() {
-    cat /etc/pacman.conf | grep "cachyos\|cachyos-v3\|cachyos-testing-v3\|cachyos-v4" | grep -v "#\[" | grep "\[" > /dev/null
+    cat /etc/pacman.conf | grep "cachyos\|cachyos-v3\|cachyos-core-v3\|cachyos-extra-v3\|cachyos-testing-v3\|cachyos-v4" | grep -v "#\[" | grep "\[" > /dev/null
     echo $?
 }
 

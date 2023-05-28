@@ -19,7 +19,7 @@ BEGIN { err = 1 }
     if ($0 == "[options]") {
       print;
       next;
-    } else if ($0 == "[cachyos]" || $0 == "[cachyos-v3]") {
+    } else if ($0 == "[cachyos]" || $0 == "[cachyos-v3]" || $0 == "[cachyos-core-v3]" || $0 == "[cachyos-extra-v3]") {
       if (set) {
         rm = 2;
       }
@@ -38,6 +38,12 @@ BEGIN { err = 1 }
   /^\[[^ \[\]]+\]/ {
     if (!set) {
         print "[cachyos-v3]";
+        print "Include = /etc/pacman.d/cachyos-v3-mirrorlist";
+        print "";
+        print "[cachyos-core-v3]";
+        print "Include = /etc/pacman.d/cachyos-v3-mirrorlist";
+        print "";
+        print "[cachyos-extra-v3]";
         print "Include = /etc/pacman.d/cachyos-v3-mirrorlist";
         print "";
         print "[cachyos]";
