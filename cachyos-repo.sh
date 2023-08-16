@@ -157,7 +157,7 @@ run_install() {
               "${mirror_url}/cachyos-mirrorlist-17-1-any.pkg.tar.zst"    \
               "${mirror_url}/cachyos-v3-mirrorlist-17-1-any.pkg.tar.zst" \
               "${mirror_url}/cachyos-v4-mirrorlist-5-1-any.pkg.tar.zst"  \
-              "${mirror_url}/pacman-6.0.2-11-x86_64.pkg.tar.zst"
+              "${mirror_url}/pacman-6.0.2-12-x86_64.pkg.tar.zst"
 
     local is_repo_added="$(check_if_repo_was_added)"
     local is_repo_commented="$(check_if_repo_was_commented)"
