@@ -109,12 +109,12 @@ check_supported_isa_level() {
 }
 
 check_if_repo_was_added() {
-    cat /etc/pacman.conf | grep "(cachyos\|cachyos-v3\|cachyos-core-v3\|cachyos-extra-v3\|cachyos-testing-v3\|cachyos-v4)" > /dev/null
+    cat /etc/pacman.conf | grep "(cachyos\|cachyos-v3\|cachyos-core-v3\|cachyos-extra-v3\|cachyos-testing-v3\|cachyos-v4\|cachyos-core-v4\|cachyos-extra-v4)" > /dev/null
     echo $?
 }
 
 check_if_repo_was_commented() {
-    cat /etc/pacman.conf | grep "cachyos\|cachyos-v3\|cachyos-core-v3\|cachyos-extra-v3\|cachyos-testing-v3\|cachyos-v4" | grep -v "#\[" | grep "\[" > /dev/null
+    cat /etc/pacman.conf | grep "cachyos\|cachyos-v3\|cachyos-core-v3\|cachyos-extra-v3\|cachyos-testing-v3\|cachyos-v4\|cachyos-core-v4\|cachyos-extra-v4" | grep -v "#\[" | grep "\[" > /dev/null
     echo $?
 }
 
@@ -161,9 +161,13 @@ run_install() {
 
     local is_repo_added="$(check_if_repo_was_added)"
     local is_repo_commented="$(check_if_repo_was_commented)"
+    local is_isa_v4_supported="$(check_supported_isa_level x86-64-v4)"
     if [ $is_repo_added -ne 0 ] || [ $is_repo_commented -ne 0 ]; then
-        add_specific_repo x86-64-v3 ./install-repo.awk cachyos-v3
-        add_specific_repo x86-64-v4 ./install-v4-repo.awk cachyos-v4
+        if [ $is_isa_v4_supported -eq 0 ]; then
+            add_specific_repo x86-64-v4 ./install-v4-repo.awk cachyos-v4
+        else
+            add_specific_repo x86-64-v3 ./install-repo.awk cachyos-v3
+        fi
     else
         info "Repo is already added!"
     fi

@@ -19,13 +19,13 @@ BEGIN { err = 1 }
     if ($0 == "[options]") {
       print;
       next;
-    } else if ($0 == "[cachyos-v4]") {
+    } else if ($0 == "[cachyos]" || $0 == "[cachyos-v4]" || $0 == "[cachyos-core-v4]" || $0 == "[cachyos-extra-v4]") {
       if (set) {
         rm = 2;
       }
       set = 1;
-    } else if ($0 == "Architecture = auto" || $0 == "Architecture = x86_64" || $0 == "Architecture = x86_64 x86_64_v3") {
-      print "Architecture = x86_64 x86_64_v3 x86_64_v4";
+    } else if ($0 == "Architecture = x86_64" || $0 == "Architecture = x86_64 x86_64_v3" || $0 == "Architecture = x86_64 x86_64_v3 x86_64_v4") {
+      print "Architecture = auto";
       next;
     }
 
@@ -39,6 +39,15 @@ BEGIN { err = 1 }
     if (!set) {
         print "[cachyos-v4]";
         print "Include = /etc/pacman.d/cachyos-v4-mirrorlist";
+        print "";
+        print "[cachyos-core-v4]";
+        print "Include = /etc/pacman.d/cachyos-v4-mirrorlist";
+        print "";
+        print "[cachyos-extra-v4]";
+        print "Include = /etc/pacman.d/cachyos-v4-mirrorlist";
+        print "";
+        print "[cachyos]";
+        print "Include = /etc/pacman.d/cachyos-mirrorlist";
         print "";
         set = 1;
         err = 0;
