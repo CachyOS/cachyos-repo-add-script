@@ -203,11 +203,11 @@ run_remove() {
 run() {
     if $_install; then
         run_install
+        pacman -Syu
     elif $_remove; then
         run_remove
+        pacman -Suuy
     fi
-
-    pacman -Syu
 }
 
 run
