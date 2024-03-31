@@ -203,11 +203,13 @@ run_remove() {
 run() {
     if $_install; then
         run_install
-        pacman -Syu
     elif $_remove; then
         run_remove
         pacman -Suuy
+        pacman -S core/pacman
+        pacman -Qqn | pacman -S -
     fi
+    pacman -Syu
 }
 
 run
