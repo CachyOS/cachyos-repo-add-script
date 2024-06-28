@@ -201,6 +201,17 @@ run_remove() {
 
         info "CachyOS repo removed"
         mv $pacman_conf_cachyos $pacman_conf
+
+        pacman -Suuy
+        pacman -S core/pacman
+        pacman -Qqn | pacman -S -
+
+        pacman -R "cachyos-keyring"       \
+                  "cachyos-mirrorlist"    \
+                  "cachyos-v3-mirrorlist" \
+                  "cachyos-v4-mirrorlist"
+
+        pacman-key --delete F3B607488DB35A47 || true
     else
         info "Repo is not added!"
     fi
@@ -213,9 +224,6 @@ run() {
         run_install
     elif $_remove; then
         run_remove
-        pacman -Suuy
-        pacman -S core/pacman
-        pacman -Qqn | pacman -S -
     fi
     pacman -Syu
 }

@@ -19,7 +19,7 @@ BEGIN { err = 1 }
     if ($0 == "[options]") {
       print;
       next;
-    } else if ($0 == "[cachyos]" || $0 == "[cachyos-v3]" || $0 == "[cachyos-core-v3]" || $0 == "[cachyos-extra-v3]" || $0 == "[cachyos-testing-v3]" || $0 == "[cachyos-v4]") {
+    } else if ($0 == "[cachyos]" || $0 == "[cachyos-v3]" || $0 == "[cachyos-core-v3]" || $0 == "[cachyos-extra-v3]" || $0 == "[cachyos-testing-v3]" || $0 == "[cachyos-v4]" || $0 == "[cachyos-core-v4]" || $0 == "[cachyos-extra-v4]" || $0 == "[cachyos-znver4]" || $0 == "[cachyos-core-znver4]" || $0 == "[cachyos-extra-znver4]") {
       rm = 2;
     } else if ($0 == "Architecture = x86_64 x86_64_v3" || $0 == "Architecture = x86_64 x86_64_v3 x86_64_v4") {
       print "Architecture = auto";
