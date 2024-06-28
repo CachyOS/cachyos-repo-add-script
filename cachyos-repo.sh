@@ -108,13 +108,18 @@ check_supported_isa_level() {
     echo $?
 }
 
+check_supported_znver45() {
+    gcc -march=native -Q --help=target 2>&1 | head -n 35 | grep -E '(znver4|znver5)' > /dev/null
+    echo $?
+}
+
 check_if_repo_was_added() {
-    cat /etc/pacman.conf | grep "(cachyos\|cachyos-v3\|cachyos-core-v3\|cachyos-extra-v3\|cachyos-testing-v3\|cachyos-v4\|cachyos-core-v4\|cachyos-extra-v4)" > /dev/null
+    cat /etc/pacman.conf | grep "(cachyos\|cachyos-v3\|cachyos-core-v3\|cachyos-extra-v3\|cachyos-testing-v3\|cachyos-v4\|cachyos-core-v4\|cachyos-extra-v4\|cachyos-znver4\|cachyos-core-znver4\|cachyos-extra-znver4)" > /dev/null
     echo $?
 }
 
 check_if_repo_was_commented() {
-    cat /etc/pacman.conf | grep "cachyos\|cachyos-v3\|cachyos-core-v3\|cachyos-extra-v3\|cachyos-testing-v3\|cachyos-v4\|cachyos-core-v4\|cachyos-extra-v4" | grep -v "#\[" | grep "\[" > /dev/null
+    cat /etc/pacman.conf | grep "cachyos\|cachyos-v3\|cachyos-core-v3\|cachyos-extra-v3\|cachyos-testing-v3\|cachyos-v4\|cachyos-core-v4\|cachyos-extra-v4\|cachyos-znver4\|cachyos-core-znver4\|cachyos-extra-znver4" | grep -v "#\[" | grep "\[" > /dev/null
     echo $?
 }
 
@@ -162,8 +167,11 @@ run_install() {
     local is_repo_added="$(check_if_repo_was_added)"
     local is_repo_commented="$(check_if_repo_was_commented)"
     local is_isa_v4_supported="$(check_supported_isa_level x86-64-v4)"
+    local is_znver_supported="$(check_supported_znver45)"
     if [ $is_repo_added -ne 0 ] || [ $is_repo_commented -ne 0 ]; then
-        if [ $is_isa_v4_supported -eq 0 ]; then
+        if [ $is_znver_supported -eq 0 ]; then
+            add_specific_repo x86-64-v4 ./install-znver4-repo.awk cachyos-znver4
+        elif [ $is_isa_v4_supported -eq 0 ]; then
             add_specific_repo x86-64-v4 ./install-v4-repo.awk cachyos-v4
         else
             add_specific_repo x86-64-v3 ./install-repo.awk cachyos-v3
