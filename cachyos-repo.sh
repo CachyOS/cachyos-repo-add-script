@@ -109,7 +109,7 @@ check_supported_isa_level() {
 }
 
 check_supported_znver45() {
-    gcc -march=native -Q --help=target 2>&1 | head -n 37 | grep -E '(znver4|znver5)' > /dev/null
+    gcc -march=native -Q --help=target 2>&1 | grep 'march' | grep -E '(znver4|znver5)' > /dev/null
     echo $?
 }
 
