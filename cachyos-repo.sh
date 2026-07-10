@@ -153,7 +153,7 @@ add_specific_repo() {
 run_install() {
     msg "Installing CachyOS repo.."
 
-    pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com
+    pacman-key --recv-keys F3B607488DB35A47 --keyserver hkps://keyserver.ubuntu.com
     pacman-key --lsign-key F3B607488DB35A47
 
     local mirror_url="https://mirror.cachyos.org/repo/x86_64/cachyos"
