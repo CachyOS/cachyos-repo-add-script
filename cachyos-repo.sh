@@ -23,6 +23,7 @@ Usage: cachyos-repo.sh [options]
 Options:
   --help                   Display this information.
   --install                Install repo.
+  --unattended             Automatically confirm all prompts.
   --remove                 Remove repo.
 EOF
 exit 0
@@ -40,6 +41,7 @@ fi
 
 _install=true
 _remove=false
+_noconfirm=""
 for i in "$@"; do
   case $i in
     --install)
@@ -50,6 +52,10 @@ for i in "$@"; do
     --remove)
       _install=false
       _remove=true
+      shift # past argument=value
+      ;;
+    --unattended)
+      _noconfirm="--noconfirm"
       shift # past argument=value
       ;;
     *)
@@ -158,7 +164,8 @@ run_install() {
 
     local mirror_url="https://mirror.cachyos.org/repo/x86_64/cachyos"
 
-    pacman -U "${mirror_url}/cachyos-keyring-20240331-1-any.pkg.tar.zst" \
+    pacman -U $_noconfirm \
+              "${mirror_url}/cachyos-keyring-20240331-1-any.pkg.tar.zst" \
               "${mirror_url}/cachyos-mirrorlist-27-1-any.pkg.tar.zst"    \
               "${mirror_url}/cachyos-v3-mirrorlist-27-1-any.pkg.tar.zst" \
               "${mirror_url}/cachyos-v4-mirrorlist-27-1-any.pkg.tar.zst"  \
@@ -202,11 +209,12 @@ run_remove() {
         info "CachyOS repo removed"
         mv $pacman_conf_cachyos $pacman_conf
 
-        pacman -Suuy
-        pacman -S core/pacman
-        pacman -Qqn | pacman -S -
+        pacman -Suuy $_noconfirm
+        pacman -S $_noconfirm core/pacman
+        pacman -Qqn | pacman -S $_noconfirm -
 
-        pacman -R "cachyos-keyring"       \
+        pacman -R $_noconfirm             \
+                  "cachyos-keyring"       \
                   "cachyos-mirrorlist"    \
                   "cachyos-v3-mirrorlist" \
                   "cachyos-v4-mirrorlist"
@@ -225,7 +233,7 @@ run() {
     elif $_remove; then
         run_remove
     fi
-    pacman -Syu
+    pacman -Syu $_noconfirm
 }
 
 run
